@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+    body {
+        background: #1e1e1e;
+        color: #ddd;
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        padding-top: 2rem;
+    }
+
+    svg {
+        background: #deb887;
+        border: 2px solid #333;
+    }
+
+    a:hover circle.hit {
+        fill: rgba(0, 0, 0, 0.25);
+    }
+
+    #info {
+        margin-top: 0.75rem;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #aaa;
+    }
+</style>
+</head>
+
+<body>
+<div>
+    <svg id="board" width="400" height="400"
+         viewBox="0 0 400 400"></svg>
+
+    <div id="info">
+        Click to place stones. Black moves first.
+    </div>
+</div>
+<script type="module" src="/main.js"></script>
+</body>
+</html>

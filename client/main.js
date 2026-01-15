@@ -1,0 +1,136 @@
+// Import the SDK
+import { DiscordSDK } from "@discord/embedded-app-sdk";
+
+import "./style.css";
+
+// Instantiate the SDK
+const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+
+setupDiscordSdk().then(() => {
+  console.log("Discord SDK is ready");
+});
+
+async function setupDiscordSdk() {
+  await discordSdk.ready();
+}
+
+const boardSize = 9;
+const margin = 40;
+const spacing = 40;
+const stoneRadius = 16;
+const hitRadius = 14;
+
+/*
+gamestate[y][x] is:
+    null  -> empty
+    true  -> black
+    false -> white
+*/
+const gamestate = Array.from({ length: boardSize }, () =>
+    Array(boardSize).fill(null)
+);
+
+let currentPlayer = true; // true = black, false = white
+
+const svg = document.getElementById("board");
+
+function svgEl(name, attrs = {}) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+}
+
+function drawGrid() {
+    const g = svgEl("g", { stroke: "#000", "stroke-width": 2 });
+
+    for (let i = 0; i < boardSize; i++) {
+        const pos = margin + i * spacing;
+
+        g.appendChild(svgEl("line", {
+            x1: margin,
+            y1: pos,
+            x2: margin + spacing * (boardSize - 1),
+            y2: pos
+        }));
+
+        g.appendChild(svgEl("line", {
+            x1: pos,
+            y1: margin,
+            x2: pos,
+            y2: margin + spacing * (boardSize - 1)
+        }));
+    }
+
+    svg.appendChild(g);
+}
+
+
+function drawStones() {
+    svg.querySelectorAll(".stone").forEach(n => n.remove());
+
+    for (let y = 0; y < boardSize; y++) {
+        for (let x = 0; x < boardSize; x++) {
+            const v = gamestate[y][x];
+            if (v === null) continue;
+
+            const cx = margin + x * spacing;
+            const cy = margin + y * spacing;
+
+            svg.appendChild(svgEl("circle", {
+                class: "stone",
+                cx, cy,
+                r: stoneRadius,
+                fill: v ? "#000" : "#fff",
+                stroke: "#000"
+            }));
+        }
+    }
+}
+
+function handleClick(x, y) {
+    if (gamestate[y][x] !== null) return;
+
+    gamestate[y][x] = currentPlayer;
+    currentPlayer = !currentPlayer;
+
+    drawStones();
+}
+
+function generateIntersections() {
+    const g = svgEl("g");
+
+    for (let y = 0; y < boardSize; y++) {
+        for (let x = 0; x < boardSize; x++) {
+
+            const cx = margin + x * spacing;
+            const cy = margin + y * spacing;
+
+            const a = svgEl("a", { href: "#" });
+
+            const hit = svgEl("circle", {
+                class: "hit",
+                cx, cy,
+                r: hitRadius,
+                fill: "transparent"
+            });
+
+            hit.addEventListener("click", e => {
+                e.preventDefault();
+                handleClick(x, y);
+            });
+
+            hit.appendChild(svgEl("title", {},));
+            hit.lastChild.textContent =
+                String.fromCharCode(65 + x) + (boardSize - y);
+
+            a.appendChild(hit);
+            g.appendChild(a);
+        }
+    }
+
+    svg.appendChild(g);
+}
+
+drawGrid();
+generateIntersections();
+drawStones();
